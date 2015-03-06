@@ -19,10 +19,10 @@
 /****** CONFIGURABLE BITS **********************/
 
 var server = "irc.mozilla.org";
-var channel = "#dietrich";
+var channel = "#devrel";
 var nick = "stackbot";
 
-var feedURL = 'http://stackoverflow.com/feeds/tag/html5 or firefox or firefox-developer-tools or firefox-os'
+var feedURL = 'http://stackoverflow.com/feeds/tag?tagnames=firefox-os+or+firefox-developer-tools&sort=newest'
 
 // How often to check feeds, in minutes.
 // Defaults to once an hour.
@@ -95,7 +95,6 @@ function onItem(item) {
       diff = Date.now() - pubDate.getTime(),
       diffInMins = (diff / 1000) / 60
   if (diffInMins < feedUpdateIntervalMins) {
-    //console.log('adding to queue', item.title)
     queue.push(item)
   }
 }

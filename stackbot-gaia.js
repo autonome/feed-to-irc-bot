@@ -19,7 +19,7 @@
 /****** CONFIGURABLE BITS **********************/
 
 var server = "irc.mozilla.org";
-var channel = "#gaia";
+var channel = "#fxos";
 var nick = "fxos-stackbot";
 
 var feedURL = 'http://stackoverflow.com/feeds/tag?tagnames=firefox-os&sort=newest'

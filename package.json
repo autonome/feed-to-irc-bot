@@ -1,0 +1,31 @@
+{
+  "name": "stackbot",
+  "version": "1.0.0",
+  "description": "Bot for monitoring tags on Stack Overflow and notifying IRC channels about new posts.",
+  "main": "stackbot.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/autonome/Stackbot.git"
+  },
+  "keywords": [
+    "bot",
+    "bots",
+    "stackoverflow",
+    "irc",
+    "rss"
+  ],
+  "author": "Dietrich Ayala <autonome@gmail.com> (http://metafluff.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/autonome/Stackbot/issues"
+  },
+  "homepage": "https://github.com/autonome/Stackbot#readme",
+  "dependencies": {
+    "feedparser": "^2.2.9",
+    "irc": "^0.5.2",
+    "request": "^2.88.0"
+  }
+}

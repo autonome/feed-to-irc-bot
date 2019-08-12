@@ -35,6 +35,14 @@ let options = {
   debug: false
 };
 
+// Process any config parameters
+Object.keys(options).forEach(key => {
+  let name = 'STACKBOT_' + key.toUpperCase();
+  if (process.env[name]) {
+    options[key] = process.env[name];
+  }
+});
+
 let feedURL =
   'https://stackoverflow.com/feeds/tag?sort=newest&tagnames='
   + encodeURIComponent(options.tags.join(' or '));

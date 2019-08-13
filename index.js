@@ -5,11 +5,21 @@ let options = {
   // IRC server the bot will connect to
   server: 'irc.freenode.net',
 
+  // encrypt the connection
+  secure: true,
+
   // channels the bot will join
   channel: '#dietrich',
 
   // name of the bot
-  nick: 'Stackbot',
+  nick: 'ipfs-stackbot',
+
+  // usually same as nick. only required if you're registered
+  // on the server and are also sending password.
+  userName: '',
+
+  // the password, if your nick is registered and you are logging in.
+  password: '',
 
   // StackOverflow tags the bot will msg about
   tags: ['ipfs'],
@@ -57,11 +67,17 @@ log('feed url', feedURL)
 /****** END CONFIGURABLE BITS ******************/
 
 var irc = require('irc'),
-    client = new irc.Client(options.server, options.nick, { }),
     rooms = [options.channel],
     joined = false,
     queue = [],
     lastFeedCheck = null
+
+let client = new irc.Client(options.server, options.nick, {
+  sasl: !!options.password,
+  userName: options.userName || options.nick,
+  password: options.password,
+  debug: options.debug
+});
 
 client.on('registered', function() {
   log('bot registered on network')

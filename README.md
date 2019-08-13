@@ -20,8 +20,11 @@ To use the options below, create environment variables that are all upper case a
 For example, to change the default nick, create an env var like `STACKBOT_NICK`.
 
 * server: IRC server the bot will connect to
+* secure: bool to encrypt the connection, default true
 * channel: channels the bot will join
 * nick: name of the bot
+* userName: if logging in, and different than nick
+* password: required if logging in
 * tags: StackOverflow tags the bot will msg about (comma delimited string)
 * feedUpdateIntervalMins: How often to check feeds, in minutes. Defaults to once an hour.
 * queueUpdateIntervalSecs: How often to process queue, in seconds. Defaults to every 10 seconds

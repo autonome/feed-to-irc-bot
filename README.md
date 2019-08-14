@@ -1,8 +1,8 @@
-# Stackbot
+# Feed-to-IRC Bot
 
-Stack Overflow watcher bot.
+RSS feed watcher bot.
 
-Searches stackoverflow.com for your search terms, and posts them to the IRC channel of your choice.
+Monitors an RSS feed, and posts new items to the IRC channel of your choice.
 
 No data persistence required.
 
@@ -13,11 +13,10 @@ No data persistence required.
 - Checks feeds every X minutes
 - Waits X seconds between posts to not flood the channel
 
+See example.js for a StackOverflow bot that notifies on new questions for given tags.
+
 ## Options
 
-To use the options below, create environment variables that are all upper case and prefixed with STACKBOT_.
-
-For example, to change the default nick, create an env var like `STACKBOT_NICK`.
 
 * server: IRC server the bot will connect to
 * secure: bool to encrypt the connection, default true
@@ -25,11 +24,10 @@ For example, to change the default nick, create an env var like `STACKBOT_NICK`.
 * nick: name of the bot
 * userName: if logging in, and different than nick
 * password: required if logging in
-* tags: StackOverflow tags the bot will msg about (comma delimited string)
 * feedUpdateIntervalMins: How often to check feeds, in minutes. Defaults to once an hour.
-* queueUpdateIntervalSecs: How often to process queue, in seconds. Defaults to every 10 seconds
+* msgSendIntervalSecs: How often to process queue, in seconds. Defaults to every 10 seconds
 * joinMessage: Message from bot when joining a channel
-* questionMessage: Message from bot prefixing a new SO question
+* itemMessagePrefix: Prefix new items with this message
 * aboutMessage: If someone speaks to the bot in the channel like 'nick: '
 * debug: if debug = true, console.log a bunch of stuff
 

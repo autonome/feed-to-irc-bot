@@ -48,7 +48,7 @@ let botConfig = {
 
   // How often to msg the IRC channel, in seconds.
   // Defaults to every 10 seconds
-  queueUpdateIntervalSecs: 10,
+  msgSendIntervalSecs: 10,
 
   // Message from bot when joining a channel
   joinMessage: "Hi! I'll notify you about new questions on StackOverflow about the tags I'm configured with.",
@@ -64,6 +64,11 @@ let botConfig = {
 };
 
 // Process any environment parameters
+// Eg, create environment variables that are all
+// upper case and prefixed with STACKBOT_.
+//
+// For example, to change the default nick, create an env var STACKBOT_NICK.
+
 Object.keys(botConfig).forEach(key => {
   let name = 'STACKBOT_' + key.toUpperCase();
   if (process.env[name]) {

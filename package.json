@@ -1,28 +1,27 @@
 {
-  "name": "stackbot",
+  "name": "feed-to-irc-bot",
   "version": "1.0.0",
-  "description": "Bot for monitoring tags on Stack Overflow and notifying IRC channels about new posts.",
-  "main": "stackbot.js",
+  "description": "Bot for monitoring RSS feeds and notifying IRC channels about new posts.",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/autonome/Stackbot.git"
+    "url": "git+https://github.com/autonome/feed-to-irc-bot.git"
   },
   "keywords": [
     "bot",
     "bots",
-    "stackoverflow",
     "irc",
     "rss"
   ],
   "author": "Dietrich Ayala <autonome@gmail.com> (http://metafluff.com)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/autonome/Stackbot/issues"
+    "url": "https://github.com/autonome/feed-to-irc-bot/issues"
   },
-  "homepage": "https://github.com/autonome/Stackbot#readme",
+  "homepage": "https://github.com/autonome/feed-to-irc-bot#readme",
   "dependencies": {
     "feedparser": "^2.2.9",
     "irc": "^0.5.2",

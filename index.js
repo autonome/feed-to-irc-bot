@@ -1,176 +1,167 @@
-/****** CONFIGURABLE BITS **********************/
+'use strict';
 
-let options = {
+module.exports = function(opts) {
 
-  // IRC server the bot will connect to
-  server: 'irc.freenode.net',
+  let options = {
 
-  // encrypt the connection
-  secure: true,
+    // IRC server the bot will connect to
+    server: opts.server || 'irc.freenode.net',
 
-  // channels the bot will join
-  channel: '#dietrich',
+    // encrypt the connection
+    secure: opts.secure || true,
 
-  // name of the bot
-  nick: 'ipfs-stackbot',
+    // channels the bot will join
+    channel: opts.channel || '#feed-to-irc-bot',
 
-  // usually same as nick. only required if you're registered
-  // on the server and are also sending password.
-  userName: '',
+    // name of the bot
+    nick: opts.nick || 'feed-to-irc-bot',
 
-  // the password, if your nick is registered and you are logging in.
-  password: '',
+    // usually same as nick. only required if you're registered
+    // on the server and are also sending password.
+    userName: opts.userName || '',
 
-  // StackOverflow tags the bot will msg about
-  tags: ['ipfs'],
+    // the password, if your nick is registered and you are logging in.
+    password: opts.password || '',
 
-  // How often to check feeds, in minutes.
-  // Defaults to once an hour.
-  feedUpdateIntervalMins: 60,
+    // StackOverflow tags the bot will msg about
+    feedURL: opts.feedURL || '',
 
-  // How often to process queue, in seconds.
-  // Defaults to every 10 seconds
-  queueUpdateIntervalSecs: 10,
+    // How often to check feeds, in minutes.
+    // Defaults to once an hour.
+    feedUpdateIntervalMins: opts.feedUpdateIntervalMins || 60,
 
-  // Message from bot when joining a channel
-  joinMessage: "Hi! I'll notify you about new questions on StackOverflow about the tags I'm configured with.",
+    // How often to process queue, in seconds.
+    // Defaults to every 10 seconds
+    msgSendIntervalSecs: opts.msgSendIntervalSecs || 10,
 
-  // Message from bot prefixing a new SO question
-  questionMessage: "New question on StackOverflow: ",
+    // Message from bot when joining a channel
+    joinMessage: opts.joinMessage || '',
 
-  // If someone speaks to the bot in the channel like 'nick: '
-  aboutMessage: 'I was set up by dietricha, and my source code is at https://github.com/autonome/Stackbot',
+    // Prefix new feed items with this
+    itemMessagePrefix: opts.itemMessagePrefix || 'New feed item: ',
 
-  // if in debug mode, log everything
-  debug: false
-};
+    // If someone speaks to the bot in the channel like 'nick: '
+    aboutMessage: opts.aboutMessage || 'My original source code is at https://github.com/autonome/feed-to-irc-bot',
 
-// Process any config parameters
-Object.keys(options).forEach(key => {
-  let name = 'STACKBOT_' + key.toUpperCase();
-  if (process.env[name]) {
-    options[key] = process.env[name];
+    // if in debug mode, log everything
+    debug: opts.debug || false
+  };
+
+  function log() {
+    if (options.debug)
+      console.log(...arguments)
   }
-});
 
-let feedURL =
-  'https://stackoverflow.com/feeds/tag?sort=newest&tagnames='
-  + encodeURIComponent(options.tags.join(' or '));
+  log('feed url', options.feedURL)
 
-function log() {
-  if (options.debug)
-    console.log(...arguments)
-}
+  /****** END CONFIGURABLE BITS ******************/
 
-log('feed url', feedURL)
+  var irc = require('irc'),
+      rooms = [options.channel],
+      joined = false,
+      queue = [],
+      lastFeedCheck = null
 
-/****** END CONFIGURABLE BITS ******************/
+  let client = new irc.Client(options.server, options.nick, {
+    sasl: !!options.password,
+    userName: options.userName || options.nick,
+    password: options.password,
+    debug: options.debug
+  });
 
-var irc = require('irc'),
-    rooms = [options.channel],
-    joined = false,
-    queue = [],
-    lastFeedCheck = null
-
-let client = new irc.Client(options.server, options.nick, {
-  sasl: !!options.password,
-  userName: options.userName || options.nick,
-  password: options.password,
-  debug: options.debug
-});
-
-client.on('registered', function() {
-  log('bot registered on network')
-  client.join(rooms[0], function() {
-    log('bot joined room', rooms[0])
-    client.say(rooms[0], options.joinMessage)
-    joined = true
+  client.on('registered', function() {
+    log('bot registered on network')
+    client.join(rooms[0], function() {
+      log('bot joined room', rooms[0])
+      client.say(rooms[0], options.joinMessage)
+      joined = true
+    })
   })
-})
 
-client.addListener('message' + rooms[0], function(from, message) {
-  if (message.indexOf(options.nick + ': ') == 0) {
-    client.say(rooms[0], options.aboutMessage)
-  }
-});
-
-client.addListener('error', function(message) {
-  log('error: ', message);
-})
-
-function parseFeed(url) {
-  var FeedParser = require('feedparser')
-    , request = require('request');
-
-  var req = request(url)
-    , feedparser = new FeedParser();
-
-  req.on('error', function (error) {
-    // handle any request errors
-    log('feedparser: request error', error)
-  });
-
-  req.on('response', function (res) {
-    var stream = this;
-
-    log('feedparser: response')
-
-    if (res.statusCode != 200) return this.emit('error', new Error('Bad status code'));
-
-    stream.pipe(feedparser);
-  });
-
-
-  feedparser.on('error', function(error) {
-    // handle any feedparser errors
-    log('feedparser error', error)
-  });
-
-  feedparser.on('readable', function() {
-    // This is where the action is!
-    var stream = this
-      , meta = this.meta // **NOTE** the "meta" is always available in the context of the feedparser instance
-      , item;
-
-    while (item = stream.read()) {
-      onItem(item)
+  client.addListener('message' + rooms[0], function(from, message) {
+    if (message.indexOf(options.nick + ': ') == 0) {
+      client.say(rooms[0], options.aboutMessage)
     }
   });
-}
 
-// Process an item found in a feed
-//
-// If item is newer than configured feed check interval
-// then add it to the queue.
-function onItem(item) {
-  var pubDate = new Date(item.pubdate),
-      diff = Date.now() - pubDate.getTime(),
-      diffInMins = (diff / 1000) / 60
-  //log(diffInMins, '<', options.feedUpdateIntervalMins, '?')
-  if (diffInMins < options.feedUpdateIntervalMins) {
-    log('added item to queue:', item.title)
-    queue.push(item)
+  client.addListener('error', function(message) {
+    log('error: ', message);
+  })
+
+  function parseFeed(url) {
+    var FeedParser = require('feedparser')
+      , request = require('request');
+
+    var req = request(url)
+      , feedparser = new FeedParser();
+
+    req.on('error', function (error) {
+      // handle any request errors
+      log('feedparser: request error', error)
+    });
+
+    req.on('response', function (res) {
+      var stream = this;
+
+      log('feedparser: response')
+
+      if (res.statusCode != 200) return this.emit('error', new Error('Bad status code'));
+
+      stream.pipe(feedparser);
+    });
+
+
+    feedparser.on('error', function(error) {
+      // handle any feedparser errors
+      log('feedparser error', error)
+    });
+
+    feedparser.on('readable', function() {
+      // This is where the action is!
+      var stream = this
+        , meta = this.meta // **NOTE** the "meta" is always available in the context of the feedparser instance
+        , item;
+
+      while (item = stream.read()) {
+        onItem(item)
+      }
+    });
   }
-}
 
-// Notify registered channels of item
-function notify(item) {
-  client.say(rooms[0], options.questionMessage + item.title + ' - ' + item.link)
-}
-
-// Kickoff at script start
-parseFeed(feedURL)
-
-// Initiate feed check driver
-setInterval(function feedDriver() {
-  log('feed driver')
-  //parseFeed(feedURL)
-}, options.feedUpdateIntervalMins * 60 * 1000)
-
-// Inititate queue processing driver
-setInterval(function queueDriver() {
-  log('queue driver, queue length:', queue.length)
-  if (joined && queue.length) {
-    notify(queue.shift())
+  // Process an item found in a feed
+  //
+  // If item is newer than configured feed check interval
+  // then add it to the queue.
+  function onItem(item) {
+    var pubDate = new Date(item.pubdate),
+        diff = Date.now() - pubDate.getTime(),
+        diffInMins = (diff / 1000) / 60
+    //log(diffInMins, '<', options.feedUpdateIntervalMins, '?')
+    if (diffInMins < options.feedUpdateIntervalMins) {
+      log('added item to queue:', item.title)
+      queue.push(item)
+    }
   }
-}, options.queueUpdateIntervalSecs * 1000)
+
+  // Notify registered channels of item
+  function notify(item) {
+    client.say(rooms[0], options.itemMessagePrefix + item.title + ' - ' + item.link)
+  }
+
+  // Kickoff at script start
+  parseFeed(options.feedURL)
+
+  // Initiate feed check driver
+  setInterval(function feedDriver() {
+    log('feed driver')
+    //parseFeed(feedURL)
+  }, options.feedUpdateIntervalMins * 60 * 1000)
+
+  // Inititate queue processing driver
+  setInterval(function queueDriver() {
+    log('queue driver, queue length:', queue.length)
+    if (joined && queue.length) {
+      notify(queue.shift())
+    }
+  }, options.msgSendIntervalSecs * 1000)
+}

@@ -44,7 +44,7 @@ let botConfig = {
 
   // How often to check feeds, in minutes.
   // Defaults to once an hour.
-  feedUpdateIntervalMins: 60,
+  feedUpdateIntervalMins: 6000,
 
   // How often to msg the IRC channel, in seconds.
   // Defaults to every 10 seconds
@@ -57,7 +57,7 @@ let botConfig = {
   itemMessagePrefix: "New question on StackOverflow: ",
 
   // If someone speaks to the bot in the channel like 'nick: '
-  aboutMessage: 'I was set up by dietricha, and my source code is at https://github.com/autonome/Stackbot',
+  aboutMessage: 'I am the example code from https://github.com/autonome/feed-to-irc-bot',
 
   // if in debug mode, log everything
   debug: true

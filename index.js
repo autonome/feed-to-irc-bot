@@ -58,7 +58,7 @@ module.exports = function(opts) {
 
   var irc = require('irc'),
       rooms = [options.channel],
-      joined = false,
+      transportReady = false,
       queue = [],
       lastFeedCheck = null
 
@@ -74,7 +74,7 @@ module.exports = function(opts) {
     client.join(rooms[0], function() {
       log('bot joined room', rooms[0])
       client.say(rooms[0], options.joinMessage)
-      joined = true
+      transportReady = true
     })
   })
 
@@ -89,10 +89,18 @@ module.exports = function(opts) {
   })
 
   function parseFeed(url) {
-    var FeedParser = require('feedparser')
+    let FeedParser = require('feedparser')
       , request = require('request');
 
-    var req = request(url)
+    let reqOptions = {
+      url,
+      headers: {
+        'User-Agent': 'npm:feed-to-irc'
+      }
+    }
+
+    log('parseFeed():', url)
+    var req = request(reqOptions)
       , feedparser = new FeedParser();
 
     req.on('error', function (error) {
@@ -103,7 +111,7 @@ module.exports = function(opts) {
     req.on('response', function (res) {
       var stream = this;
 
-      log('feedparser: response')
+      log('feedparser: response!', res.statusCode, res.statusMessage)
 
       if (res.statusCode != 200) return this.emit('error', new Error('Bad status code'));
 
@@ -160,7 +168,7 @@ module.exports = function(opts) {
   // Inititate queue processing driver
   setInterval(function queueDriver() {
     log('queue driver, queue length:', queue.length)
-    if (joined && queue.length) {
+    if (transportReady && queue.length) {
       notify(queue.shift())
     }
   }, options.msgSendIntervalSecs * 1000)

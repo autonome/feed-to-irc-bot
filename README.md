@@ -6,6 +6,8 @@ Monitors an RSS feed, and posts new items to the IRC channel of your choice.
 
 No data persistence required.
 
+[![npm version](https://badge.fury.io/js/feed-to-irc-bot.svg)](https://badge.fury.io/js/feed-to-irc-bot)
+
 ## Features
 
 - Easy configuration

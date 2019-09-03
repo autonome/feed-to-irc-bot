@@ -1,6 +1,6 @@
 {
   "name": "feed-to-irc-bot",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Bot for monitoring RSS feeds and notifying IRC channels about new posts.",
   "main": "index.js",
   "scripts": {

@@ -162,7 +162,7 @@ module.exports = function(opts) {
   // Initiate feed check driver
   setInterval(function feedDriver() {
     log('feed driver')
-    parseFeed(feedURL)
+    parseFeed(options.feedURL)
   }, options.feedUpdateIntervalMins * 60 * 1000)
 
   // Inititate queue processing driver

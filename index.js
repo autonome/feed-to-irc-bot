@@ -56,7 +56,7 @@ module.exports = function(opts) {
 
   /****** END CONFIGURABLE BITS ******************/
 
-  var irc = require('irc'),
+  let irc = require('irc'),
       rooms = [options.channel],
       transportReady = false,
       queue = [],
@@ -162,7 +162,7 @@ module.exports = function(opts) {
   // Initiate feed check driver
   setInterval(function feedDriver() {
     log('feed driver')
-    //parseFeed(feedURL)
+    parseFeed(feedURL)
   }, options.feedUpdateIntervalMins * 60 * 1000)
 
   // Inititate queue processing driver
